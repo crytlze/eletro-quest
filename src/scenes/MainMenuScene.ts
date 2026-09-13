@@ -13,7 +13,7 @@ const CREATOR = {
   name: 'Muhammad Sufi Aulia',
   role: 'Pakar AI & Data Analis',
   identity: 'Kreator Eletro Quest',
-  quote: '"Belajar elektro paling asik sambil main."',
+  quote: '"Hay Guys! Terima kasih udah mainkan game ini. BTW, cobalah cari Easter Egg di game ini — kalau ketemu, kamu akan semakin bahagia! 🥚⚡"',
 };
 
 export class MainMenuScene extends Phaser.Scene {
@@ -449,30 +449,57 @@ export class MainMenuScene extends Phaser.Scene {
 
   private openCreator(): void {
     sfxClick();
-    const { cx, top } = this.modalShell('Tentang Creator', 580);
+    const { cx, top } = this.modalShell('Tentang Creator', 620);
     const ring = this.add.circle(cx, top + 44, 46, 0x22d3ee, 1).setDepth(42);
     ring.setStrokeStyle(4, 0xa5f3fc, 1);
     const av = this.add.text(cx, top + 42, CREATOR.avatar, { fontSize: '54px' }).setOrigin(0.5).setDepth(42);
+    const avZ = this.add.zone(cx, top + 44, 110, 110).setInteractive({ useHandCursor: true }).setDepth(43);
+    // 🥚 EASTER EGG: ketuk avatar 5x → badge + burst bahagia
+    let eggTaps = 0;
+    let eggDone = false;
+    try { eggDone = localStorage.getItem('electroquest_egg_avatar') === '1'; } catch { eggDone = false; }
+    const eggLabel = this.add
+      .text(cx, top + 100, eggDone ? '🥚 PENEMU EASTER EGG! 🎉' : '', { fontSize: '18px', color: '#fde68a', fontStyle: 'bold' })
+      .setOrigin(0.5)
+      .setDepth(42);
+    avZ.on('pointerdown', () => {
+      if (eggDone) {
+        burst(this, cx, top + 44, { colors: [0xf59e0b, 0xfacc15, 0xffffff], count: 14, distMin: 40, distMax: 140 });
+        sfxClick();
+        return;
+      }
+      eggTaps += 1;
+      sfxClick();
+      if (eggTaps >= 5) {
+        eggDone = true;
+        try { localStorage.setItem('electroquest_egg_avatar', '1'); } catch { /* abaikan */ }
+        eggLabel.setText('🥚 PENEMU EASTER EGG! 🎉');
+        burst(this, cx, top + 44, { colors: [0xf59e0b, 0xfacc15, 0x4ade80, 0xffffff], count: 40, distMin: 60, distMax: 220 });
+        sfxClick();
+      } else if (eggTaps >= 3) {
+        eggLabel.setText(`...${5 - eggTaps} ketukan lagi 👀`);
+      }
+    });
     const nm = this.add
-      .text(cx, top + 116, CREATOR.name, { fontSize: '30px', color: '#f8fafc', fontStyle: 'bold' })
+      .text(cx, top + 132, CREATOR.name, { fontSize: '30px', color: '#f8fafc', fontStyle: 'bold' })
       .setOrigin(0.5)
       .setDepth(42);
     const rl = this.add
-      .text(cx, top + 152, CREATOR.role, { fontSize: '21px', color: '#67e8f9', fontStyle: 'bold' })
+      .text(cx, top + 168, CREATOR.role, { fontSize: '21px', color: '#67e8f9', fontStyle: 'bold' })
       .setOrigin(0.5)
       .setDepth(42);
     const id = this.add
-      .text(cx, top + 182, CREATOR.identity, { fontSize: '20px', color: '#94a3b8' })
+      .text(cx, top + 198, CREATOR.identity, { fontSize: '20px', color: '#94a3b8' })
       .setOrigin(0.5)
       .setDepth(42);
     const qt = this.add
-      .text(cx, top + 230, CREATOR.quote, {
+      .text(cx, top + 246, CREATOR.quote, {
         fontSize: '21px', color: '#fde68a', align: 'center', wordWrap: { width: 480 },
       })
       .setOrigin(0.5, 0)
       .setDepth(42);
-    this.modalObjs.push(ring, av, nm, rl, id, qt);
-    this.modalButton(cx, top + 350, 'TUTUP', true, () => {
+    this.modalObjs.push(ring, av, avZ, eggLabel, nm, rl, id, qt);
+    this.modalButton(cx, top + 410, 'TUTUP', true, () => {
       sfxClick();
       this.closeModal();
     });
