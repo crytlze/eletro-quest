@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#050914" />
+    <meta
+      name="description"
+      content="Eletro Quest — game edukasi S1 Teknik Elektro. Rakit rangkaian, taklukkan vektor, menangkan peluang."
+    />
+    <title>Eletro Quest — Game Edukasi Teknik Elektro</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23050914'/%3E%3Cpath d='M18 4 8 18h7l-1 10 10-14h-7l1-10z' fill='%2322d3ee'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <aside class="side side-left">
+      <div class="side-badge">⚡</div>
+      <h1>ELETRO QUEST</h1>
+      <p class="side-sub">Game Edukasi • S1 Teknik Elektro</p>
+      <div class="chips">
+        <span>Teknik Dasar Elektro</span>
+        <span>Aljabar Linier</span>
+        <span>Statistik &amp; Probabilitas</span>
+      </div>
+      <p class="side-note">Rakit rangkaian • tekan POWER • penuhi target V / I</p>
+    </aside>
+    <div id="game-root"></div>
+    <aside class="side side-right">
+      <h2>🎮 Cara main</h2>
+      <ol>
+        <li>Ketuk kotak <b>oranye</b> untuk ganti komponen</li>
+        <li>Tekan <b>POWER</b> untuk uji rangkaian</li>
+        <li>Baca multimeter &amp; penuhi target</li>
+      </ol>
+      <h2>⌨️ Tips PC</h2>
+      <ul class="keys">
+        <li><kbd>Enter</kbd> POWER / lanjut</li>
+        <li><kbd>H</kbd> hint • <kbd>R</kbd> reset</li>
+        <li><kbd>Esc</kbd> kembali • <kbd>1</kbd>–<kbd>8</kbd> pilih level</li>
+      </ul>
+      <p class="side-note">📱 Di HP paling nyaman mode portrait.</p>
+    </aside>
+    <div id="auth-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+      <div class="auth-card">
+        <h2 id="auth-title">Daftar Akun</h2>
+        <p class="auth-sub">Biar bisa kirim review 📝</p>
+        <label for="auth-nama">Nama<input id="auth-nama" name="username" maxlength="16" autocomplete="username" /></label>
+        <label id="auth-kelas-row" for="auth-kelas">Kelas<input id="auth-kelas" name="kelas" maxlength="32" placeholder="mis. Elektro-A" autocomplete="organization" /></label>
+        <label for="auth-pass">Password<input id="auth-pass" name="password" type="password" maxlength="64" autocomplete="new-password" /></label>
+        <label id="auth-pass2-row" for="auth-pass2">Ulangi password<input id="auth-pass2" name="password2" type="password" maxlength="64" autocomplete="new-password" /></label>
+        <div id="auth-err" role="alert" aria-live="assertive" tabindex="-1"></div>
+        <button id="auth-submit" type="button">DAFTAR</button>
+        <div id="auth-toggle" role="button" tabindex="0">Sudah punya akun? <b>Masuk</b></div>
+        <button id="auth-close" type="button">✕ Tutup</button>
+      </div>
+    </div>
+    <div class="rotate-hint">
+      <div>🔄<br />Putar HP ke <b>portrait</b><br />buat main nyaman</div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,395 @@
+@font-face {
+  font-family: 'Chakra Petch';
+  src: url('./assets/fonts/chakra-petch-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Chakra Petch';
+  src: url('./assets/fonts/chakra-petch-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(1100px 700px at 15% 0%, rgba(14, 116, 144, 0.28), transparent 60%),
+    radial-gradient(1000px 700px at 85% 100%, rgba(34, 211, 238, 0.14), transparent 60%),
+    #050914;
+  overscroll-behavior: none;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  color: #e2e8f0;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+#game-root {
+  flex: 0 1 auto;
+  height: calc(100vh - 24px);
+  height: calc(100dvh - 24px);
+  aspect-ratio: 720 / 1280;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#game-root canvas {
+  border-radius: 12px;
+  box-shadow: 0 0 60px rgba(34, 211, 238, 0.18);
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Panel samping: hanya di layar lebar (PC) */
+.side {
+  display: none;
+  width: 300px;
+  flex: 0 0 300px;
+  background: rgba(11, 22, 40, 0.85);
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  border-top: 4px solid #f59e0b;
+  border-radius: 16px;
+  padding: 28px 24px;
+  box-sizing: border-box;
+  box-shadow: 0 0 40px rgba(34, 211, 238, 0.1);
+}
+
+@media (min-width: 1150px) {
+  .side {
+    display: block;
+  }
+}
+
+.side-badge {
+  font-size: 52px;
+  line-height: 1;
+  filter: drop-shadow(0 0 14px rgba(34, 211, 238, 0.8));
+}
+
+.side h1 {
+  font-size: 30px;
+  margin: 12px 0 4px;
+  color: #fcd34d;
+  letter-spacing: 1px;
+  font-family: 'Chakra Petch', system-ui, sans-serif;
+  font-weight: 700;
+}
+
+.side-sub {
+  color: #67e8f9;
+  margin: 0 0 16px;
+  font-weight: 600;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.chips span {
+  font-size: 13px;
+  background: rgba(34, 211, 238, 0.12);
+  border: 1px solid rgba(34, 211, 238, 0.4);
+  color: #a5f3fc;
+  border-radius: 999px;
+  padding: 5px 12px;
+}
+
+.side-note {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.side h2 {
+  font-size: 19px;
+  color: #a5f3fc;
+  margin: 0 0 10px;
+  font-family: 'Chakra Petch', system-ui, sans-serif;
+  font-weight: 600;
+}
+
+.side-right ol,
+.side-right ul {
+  margin: 0 0 20px;
+  padding-left: 22px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #cbd5e1;
+}
+
+.keys {
+  list-style: none;
+  padding-left: 0;
+}
+
+.keys li {
+  margin-bottom: 6px;
+}
+
+kbd {
+  display: inline-block;
+  background: #0f2a3d;
+  border: 1px solid #334155;
+  border-bottom-width: 3px;
+  border-radius: 6px;
+  padding: 1px 9px;
+  font-family: inherit;
+  font-size: 13px;
+  color: #f8fafc;
+}
+
+/* HP sempit: kolom penuh */
+@media (max-width: 760px) {
+  body {
+    padding: 0;
+    gap: 0;
+  }
+  #game-root {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+  }
+  #game-root canvas {
+    border-radius: 0;
+  }
+}
+
+/* Peringatan putar HP: hanya landscape layar pendek */
+.rotate-hint {
+  display: none;
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .rotate-hint {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(5, 9, 20, 0.92);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 26px;
+    line-height: 1.6;
+    color: #a5f3fc;
+    pointer-events: none;
+  }
+}
+
+/* ===== Mode TERANG ===== */
+body.light {
+  background:
+    radial-gradient(1100px 700px at 15% 0%, rgba(2, 132, 199, 0.16), transparent 60%),
+    radial-gradient(1000px 700px at 85% 100%, rgba(14, 116, 144, 0.12), transparent 60%),
+    #eef4fa;
+  color: #0f172a;
+}
+
+body.light .side {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(2, 132, 199, 0.7);
+  border-top-color: #d97706;
+  box-shadow: 0 0 32px rgba(2, 132, 199, 0.18);
+}
+
+body.light .side h1 {
+  color: #0c4a6e;
+}
+
+body.light .side-sub,
+body.light .side h2 {
+  color: #0e7490;
+}
+
+body.light .side-note {
+  color: #475569;
+}
+
+body.light .side-right ol,
+body.light .side-right ul {
+  color: #334155;
+}
+
+body.light .chips span {
+  background: rgba(2, 132, 199, 0.1);
+  border-color: rgba(2, 132, 199, 0.45);
+  color: #0e7490;
+}
+
+body.light kbd {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+body.light #game-root canvas {
+  box-shadow: 0 0 48px rgba(2, 132, 199, 0.25);
+}
+
+body.light .rotate-hint {
+  background: rgba(238, 244, 250, 0.94);
+  color: #0c4a6e;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== Form akun (daftar/masuk) ===== */
+#auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(2, 6, 16, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+#auth-overlay.hidden {
+  display: none;
+}
+
+.auth-card {
+  width: min(430px, 94vw);
+  max-height: 92vh;
+  max-height: 92dvh;
+  overflow-y: auto;
+  background: #0b1628;
+  border: 2px solid #22d3ee;
+  border-top: 4px solid #f59e0b;
+  border-radius: 16px;
+  padding: 24px 22px;
+  box-sizing: border-box;
+  color: #e2e8f0;
+}
+
+.auth-card h2 {
+  margin: 0 0 2px;
+  color: #a5f3fc;
+  font-family: 'Chakra Petch', system-ui, sans-serif;
+}
+
+.auth-sub {
+  margin: 0 0 14px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.auth-card label {
+  display: block;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 700;
+  color: #a5f3fc;
+  margin-bottom: 10px;
+}
+
+.auth-card input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 4px;
+  padding: 12px;
+  font-size: 17px;
+  color: #f8fafc;
+  background: #0f2a3d;
+  border: 2px solid #334155;
+  border-radius: 10px;
+}
+
+.auth-card input:focus {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+  border-color: #22d3ee;
+}
+
+.auth-card input:focus-visible {
+  outline: 2px solid #f59e0b;
+}
+
+#auth-err:focus {
+  outline: 2px solid #f87171;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+#auth-err {
+  min-height: 22px;
+  color: #f87171;
+  font-size: 14px;
+  margin: 2px 0 8px;
+}
+
+#auth-submit {
+  width: 100%;
+  padding: 14px;
+  min-height: 48px;
+  font-size: 19px;
+  font-weight: 800;
+  font-family: 'Chakra Petch', system-ui, sans-serif;
+  color: #04121a;
+  background: #22d3ee;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+#auth-submit:focus-visible, #auth-close:focus-visible {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+#auth-toggle {
+  margin-top: 12px;
+  color: #94a3b8;
+  font-size: 15px;
+  cursor: pointer;
+}
+#auth-toggle:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+#auth-toggle b {
+  color: #67e8f9;
+}
+
+#auth-close {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  font-size: 15px;
+  color: #e2e8f0;
+  background: transparent;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  cursor: pointer;
+}
