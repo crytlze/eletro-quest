@@ -20,6 +20,10 @@ import { BiasScene } from './scenes/BiasScene';
 import { DigiScene } from './scenes/DigiScene';
 import { ProgScene } from './scenes/ProgScene';
 import { LeaderboardScene } from './scenes/LeaderboardScene';
+import { initPwa, registerSw } from './pwa';
+
+initPwa();
+registerSw();
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,

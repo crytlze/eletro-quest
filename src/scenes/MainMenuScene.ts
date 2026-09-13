@@ -5,6 +5,7 @@ import { ensureFxTextures, neonBackdrop, currentLine, pressable, burst } from '.
 import { pal, getTheme, setTheme, nextTheme, THEME_ORDER } from '../theme';
 import { ensureMusic, setMusicEnabled } from '../music';
 import { drawMascot, pickPraise } from '../mascot';
+import { canInstall, doInstall, onPwaChange } from '../pwa';
 
 // Profil creator — tampil di layar "Tentang Creator".
 const CREATOR = {
@@ -163,6 +164,34 @@ export class MainMenuScene extends Phaser.Scene {
     latZ.on('pointerdown', () => {
       sfxClick();
       this.scene.start('Latihan');
+    });
+
+    // Tombol INSTALL APP (PWA) — muncul kalau bisa di-install & belum standalone.
+    // Android: beforeinstallprompt native. iOS: modal panduan manual.
+    // Posisi di bawah maskot biar tidak tabrakan bubble Pak Volt.
+    const instY = 1072;
+    const instBg = this.add.rectangle(0, 0, 624, 56, 0x14532d, 0.95);
+    instBg.setStrokeStyle(2, 0x4ade80, 1);
+    const instTx = this.add
+      .text(0, 0, '▼ INSTALL APP', { fontSize: '20px', color: '#bbf7d0', fontStyle: 'bold' })
+      .setOrigin(0.5);
+    const instVis = this.add.container(W / 2, instY, [instBg, instTx]);
+    const instZ = this.add.zone(W / 2, instY, 624, 68).setInteractive({ useHandCursor: true });
+    pressable(this, instZ, instVis);
+    const paintInstall = (): void => {
+      const show = canInstall();
+      instVis.setVisible(show);
+      instZ.active = show;
+      instVis.setAlpha(show ? 1 : 0);
+    };
+    paintInstall();
+    onPwaChange(paintInstall);
+    instZ.on('pointerdown', () => {
+      sfxClick();
+      void doInstall().then((r) => {
+        paintInstall();
+        if (r === 'ios') this.openInstallGuide();
+      });
     });
 
     // Pak Volt, maskot lab + celoteh bergilir
@@ -400,6 +429,22 @@ export class MainMenuScene extends Phaser.Scene {
     pressable(this, z, wrap);
     z.on('pointerdown', cb);
     this.modalObjs.push(bg, tx, wrap, z);
+  }
+
+  private openInstallGuide(): void {
+    sfxClick();
+    const { cx, top } = this.modalShell('Pasang di HP', 560);
+    const steps = this.add
+      .text(cx, top + 40,
+        'iPhone (Safari):\n1. Ketuk Bagikan\n2. Add to Home Screen\n3. Add\n\nAndroid (Chrome):\n1. Ketuk INSTALL APP lagi\n2. Install / Add',
+        { fontSize: '20px', color: '#e2e8f0', align: 'left', lineSpacing: 8, wordWrap: { width: 500 } })
+      .setOrigin(0.5, 0)
+      .setDepth(42);
+    this.modalObjs.push(steps);
+    this.modalButton(cx, top + 380, 'TUTUP', true, () => {
+      sfxClick();
+      this.closeModal();
+    });
   }
 
   private openCreator(): void {
