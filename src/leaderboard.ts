@@ -5,7 +5,7 @@ import { getStars, getSession } from './util';
 
 export interface BoardEntry {
   name: string;
-  kelas: string;
+  fullname: string;
   stars: number;
   levels: number;
 }
@@ -32,7 +32,7 @@ function localBoard(): BoardEntry[] {
   }
   if (stars === 0) return [];
   const sess = getSession();
-  return [{ name: sess?.name ?? 'Kamu', kelas: sess?.kelas ?? '', stars, levels }];
+  return [{ name: sess?.username ?? 'Kamu', fullname: sess?.fullname ?? '', stars, levels }];
 }
 
 export async function fetchBoard(): Promise<BoardResult> {

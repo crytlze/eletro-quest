@@ -119,18 +119,19 @@ export class MainMenuScene extends Phaser.Scene {
     const paintName = (): void => {
       const sess = getSession();
       if (sess !== null) {
-        const short = sess.name.length > 12 ? `${sess.name.slice(0, 12)}…` : sess.name;
+        const short = sess.username.length > 12 ? `${sess.username.slice(0, 12)}…` : sess.username;
         accTx.setText(`● ${short} • KELUAR`);
         accBg.setFillStyle(0x14532d, 0.95);
         accBg.setStrokeStyle(2, 0x4ade80, 1);
-        nameTx.setText(`${sess.name} • ${sess.kelas} (ketuk untuk keluar)`);
+        const fn = sess.fullname.length > 20 ? `${sess.fullname.slice(0, 20)}…` : sess.fullname;
+        nameTx.setText(`${fn} (@${sess.username})`);
         return;
       }
       accTx.setText('○ MASUK / DAFTAR');
       accBg.setFillStyle(0x0f2a3d, 0.95);
       accBg.setStrokeStyle(2, 0xf59e0b, 1);
       const nn = playerName();
-      nameTx.setText(nn === null ? 'main tanpa nama (ketuk untuk isi)' : `${nn} (ketuk untuk akun)`);
+      nameTx.setText(nn === null ? 'main tanpa akun (ketuk untuk daftar)' : `${nn} (ketuk untuk akun)`);
     };
     paintName();
     const openAccount = (): void => {
@@ -341,7 +342,7 @@ export class MainMenuScene extends Phaser.Scene {
       void submitReview(rating, text.trim()).then((st) => {
         try {
           if (st === 'ok') {
-            resultTx.setText(`✓ Makasih${nm !== null ? ' ' + nm.name : ''}! Masuk ke Pak Sufi`).setColor('#4ade80').setVisible(true);
+            resultTx.setText(`✓ Makasih${nm !== null ? ' ' + nm.username : ''}! Masuk ke Pak Sufi`).setColor('#4ade80').setVisible(true);
           } else if (st === 'auth') {
             this.closeModal();
             showAuthOverlay('masuk', (ok2) => {

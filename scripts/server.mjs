@@ -29,9 +29,9 @@ const MIME = {
 
 const COURSES = new Set(['tde', 'alj', 'stat', 'rl', 'elka', 'digi', 'prog', 'atom', 'listrik', 'aljP1', 'aljP2', 'aljP3', 'aljP4', 'aljP5', 'aljP7']);
 const scores = new Map();
-const reviews = []; // { name, kelas, rating, text, at } terbaru dulu, max 500
-const users = new Map(); // lower(nama) -> { name, kelas, salt, hash }
-const tokens = new Map(); // token -> lower(nama)
+const reviews = []; // { username, fullname, rating, text, at } terbaru dulu, max 500
+const users = new Map(); // lower(username) -> { username, fullname, email, salt, hash }
+const tokens = new Map(); // token -> lower(username)
 
 function newToken() {
   return crypto.randomBytes(24).toString('hex');
@@ -59,16 +59,24 @@ function cleanStr(v, max) {
   return out.trim().slice(0, max);
 }
 
+function validUsername(v) {
+  return /^[a-zA-Z0-9._-]{3,16}$/.test(String(v || ''));
+}
+
+function validEmail(v) {
+  return /^\S+@\S+\.\S+$/.test(String(v || '')) && String(v).length <= 64;
+}
+
 function board() {
   const per = new Map();
   for (const s of scores.values()) {
-    const cur = per.get(s.name) || { name: s.name, kelas: '', stars: 0, levels: 0, at: 0 };
-    const uk = users.get(s.name.toLowerCase());
-    if (uk !== undefined) cur.kelas = uk.kelas;
+    const cur = per.get(s.username) || { name: s.username, fullname: '', stars: 0, levels: 0, at: 0 };
+    const uk = users.get(s.username.toLowerCase());
+    if (uk !== undefined) cur.fullname = uk.fullname;
     cur.stars += s.stars;
     cur.levels += 1;
     cur.at = Math.max(cur.at, s.at);
-    per.set(s.name, cur);
+    per.set(s.username, cur);
   }
   return [...per.values()]
     .sort((a, b) => b.stars - a.stars || a.name.localeCompare(b.name))
@@ -102,7 +110,7 @@ async function go(){
     const medals=['🥇','🥈','🥉'];
     document.getElementById('b').innerHTML=j.board.map((p,i)=>
       '<tr class="'+(i<3?'top':'')+'"><td class="rank">'+(medals[i]||(i+1))+'</td><td>'+esc(p.name)+
-      '<br><span class="kl">'+esc(p.kelas||'')+'</span></td><td class="stars">★ '+p.stars+'</td><td>'+p.levels+' level</td></tr>').join('')
+      '<br><span class="kl">'+esc(p.fullname||'')+'</span></td><td class="stars">★ '+p.stars+'</td><td>'+p.levels+' level</td></tr>').join('')
       ||'<tr><td>Belum ada skor — murid main dulu! 🎮</td></tr>';
     document.getElementById('m').textContent=j.board.length+' murid • '+new Date(j.at).toLocaleTimeString('id-ID');
   }catch(e){/* coba lagi */}
@@ -136,7 +144,7 @@ async function go(){
     const j=await r.json();
     document.getElementById('s').textContent=j.count+' ulasan • rata-rata '+j.avg+'★';
     document.getElementById('l').innerHTML=j.reviews.map(v=>
-      '<div class="card"><span class="nm">'+esc(v.name)+'</span> <span class="kl">'+esc(v.kelas||'')+'</span> <span class="st">'+'★'.repeat(v.rating)+
+      '<div class="card"><span class="nm">'+esc(v.username)+'</span> <span class="kl">'+esc(v.fullname||'')+'</span> <span class="st">'+'★'.repeat(v.rating)+
       '</span> <span class="tm">'+new Date(v.at).toLocaleString('id-ID')+'</span><div class="tx">'+esc(v.text)+'</div></div>'
     ).join('')||'<p>Belum ada ulasan.</p>';
   }catch(e){/* coba lagi */}
@@ -171,18 +179,18 @@ const server = http.createServer(async (req, res) => {
       const raw = await readBody(req);
       try {
         const d = JSON.parse(raw);
-        const name = String(d.name || '').trim().slice(0, 16);
+        const username = String(d.username || '').trim();
         const course = String(d.course || '');
         const level = Number(d.level);
         const stars = Number(d.stars);
         const valid =
-          name !== '' && COURSES.has(course) && Number.isInteger(level) &&
+          validUsername(username) && COURSES.has(course) && Number.isInteger(level) &&
           level >= 1 && level <= 30 && (stars === 1 || stars === 2 || stars === 3);
         if (!valid) return send(res, 400, 'application/json', '{"ok":false}');
-        const key = name + '	' + course + '	' + level;
+        const key = username + '	' + course + '	' + level;
         const prev = scores.get(key);
         if (prev === undefined || stars > prev.stars) {
-          scores.set(key, { name, course, level, stars, at: Date.now() });
+          scores.set(key, { username, course, level, stars, at: Date.now() });
         }
         if (scores.size > 2000) {
           const first = scores.keys().next();
@@ -208,21 +216,22 @@ const server = http.createServer(async (req, res) => {
       const raw = await readBody(req);
       try {
         const d = JSON.parse(raw);
-        const name = cleanStr(d.name, 16);
-        const kelas = cleanStr(d.kelas, 32);
+        const username = String(d.username || '').trim();
+        const fullname = cleanStr(d.fullname, 32);
+        const email = String(d.email || '').trim().toLowerCase();
         const pass = String(d.pass || '');
-        if (name === '' || kelas === '' || pass.length < 4 || pass.length > 64) {
-          return send(res, 400, 'application/json', '{"ok":false,"err":"Nama, kelas wajib isi; password min. 4 karakter."}');
+        if (!validUsername(username) || fullname === '' || !validEmail(email) || pass.length < 4 || pass.length > 64) {
+          return send(res, 400, 'application/json', '{"ok":false,"err":"Username 3-16 karakter; nama & email wajib valid; password min. 4 karakter."}');
         }
-        const key = name.toLowerCase();
+        const key = username.toLowerCase();
         if (users.has(key)) {
-          return send(res, 409, 'application/json', '{"ok":false,"err":"Nama sudah dipakai, pilih nama lain."}');
+          return send(res, 409, 'application/json', '{"ok":false,"err":"Username sudah dipakai, pilih yang lain."}');
         }
         const salt = crypto.randomBytes(16).toString('hex');
-        users.set(key, { name, kelas, salt, hash: hashPass(pass, salt) });
+        users.set(key, { username, fullname, email, salt, hash: hashPass(pass, salt) });
         const token = newToken();
         tokens.set(token, key);
-        return send(res, 200, 'application/json', JSON.stringify({ ok: true, token, name, kelas }));
+        return send(res, 200, 'application/json', JSON.stringify({ ok: true, token, username, fullname, email }));
       } catch {
         return send(res, 400, 'application/json', '{"ok":false}');
       }
@@ -231,15 +240,15 @@ const server = http.createServer(async (req, res) => {
       const raw = await readBody(req);
       try {
         const d = JSON.parse(raw);
-        const key = cleanStr(d.name, 16).toLowerCase();
+        const key = String(d.username || '').trim().toLowerCase();
         const u2 = users.get(key);
-        if (!u2) return send(res, 401, 'application/json', '{"ok":false,"err":"Nama belum terdaftar."}');
+        if (!u2) return send(res, 401, 'application/json', '{"ok":false,"err":"Username belum terdaftar."}');
         if (!sameHash(hashPass(String(d.pass || ''), u2.salt), u2.hash)) {
           return send(res, 401, 'application/json', '{"ok":false,"err":"Password salah."}');
         }
         const token = newToken();
         tokens.set(token, key);
-        return send(res, 200, 'application/json', JSON.stringify({ ok: true, token, name: u2.name, kelas: u2.kelas }));
+        return send(res, 200, 'application/json', JSON.stringify({ ok: true, token, username: u2.username, fullname: u2.fullname, email: u2.email }));
       } catch {
         return send(res, 400, 'application/json', '{"ok":false}');
       }
@@ -255,7 +264,7 @@ const server = http.createServer(async (req, res) => {
         const rating = Number(d.rating);
         const valid = text !== '' && Number.isInteger(rating) && rating >= 1 && rating <= 5;
         if (!valid) return send(res, 400, 'application/json', '{"ok":false}');
-        reviews.unshift({ name: u2.name, kelas: u2.kelas, rating, text, at: Date.now() });
+        reviews.unshift({ username: u2.username, fullname: u2.fullname, rating, text, at: Date.now() });
         if (reviews.length > 500) reviews.length = 500;
         return send(res, 200, 'application/json', '{"ok":true}');
       } catch {

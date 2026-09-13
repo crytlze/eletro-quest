@@ -49,7 +49,7 @@ export class LeaderboardScene extends Phaser.Scene {
 
     const render = (board: BoardEntry[], online: boolean, at: number): void => {
       clearRows();
-      const me = getSession()?.name ?? null;
+      const me = getSession()?.username ?? null;
       if (board.length === 0) {
         const t = this.add
           .text(W / 2, listY + 120, online ? 'Belum ada skor.\nMain dulu! 🎮' : 'Belum ada progres di HP ini.\nMain 1 level dulu! 🎮', {
@@ -70,7 +70,7 @@ export class LeaderboardScene extends Phaser.Scene {
           .text(W / 2 - 200, y - 14, p.name.slice(0, 14), { fontSize: '24px', color: '#f8fafc', fontStyle: 'bold' })
           .setOrigin(0, 0.5);
         const kl = this.add
-          .text(W / 2 - 200, y + 18, (p.kelas ?? '').slice(0, 20), { fontSize: '16px', color: '#67e8f9' })
+          .text(W / 2 - 200, y + 18, (p.fullname ?? '').slice(0, 20), { fontSize: '16px', color: '#67e8f9' })
           .setOrigin(0, 0.5);
         const st = this.add
           .text(W / 2 + 252, y - 12, `★ ${p.stars}`, { fontSize: '24px', color: '#facc15', fontStyle: 'bold' })

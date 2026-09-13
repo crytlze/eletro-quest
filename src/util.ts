@@ -57,7 +57,7 @@ export function playerName(): string | null {
   }
 }
 
-/** Minta nama sekali per sesi (buat papan peringkat kelas). */
+/** Minta username sekali per sesi (buat papan peringkat kelas). */
 export function askName(): string | null {
   if (nameAsked) return playerName();
   return renamePlayer();
@@ -66,7 +66,7 @@ export function askName(): string | null {
 export function renamePlayer(): string | null {
   nameAsked = true;
   try {
-    const v = window.prompt('Tulis namamu buat papan peringkat kelas:', playerName() ?? '');
+    const v = window.prompt('Tulis username-mu buat papan peringkat kelas:', playerName() ?? '');
     if (v !== null && v.trim() !== '') {
       localStorage.setItem(NAME_KEY, v.trim().slice(0, 16));
     }
@@ -80,12 +80,12 @@ export function renamePlayer(): string | null {
 export function submitScore(course: string, level: number, stars: number): void {
   try {
     const sess = getSession();
-    const name = (sess !== null && sess.name !== '') ? sess.name : askName();
-    if (name === null || name === '') return;
+    const username = (sess !== null && sess.username !== '') ? sess.username : askName();
+    if (username === null || username === '') return;
     void fetch('api/score', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, course, level, stars }),
+      body: JSON.stringify({ username, course, level, stars }),
     }).catch(() => undefined);
   } catch {
     /* bukan server kelas — abaikan */
@@ -221,15 +221,27 @@ export function weakCount(): number {
 const AUTH_KEY = 'electroquest_auth';
 
 export interface Session {
-  name: string;
-  kelas: string;
+  username: string;
+  fullname: string;
+  email: string;
   token: string;
 }
 
 export function getSession(): Session | null {
   try {
-    const r = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null') as Session | null;
-    if (r !== null && typeof r.token === 'string' && typeof r.name === 'string') return r;
+    const r = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null') as Partial<Session> | null;
+    if (r !== null && typeof r.username === 'string' && r.username !== '' && typeof r.token === 'string') {
+      return {
+        username: r.username,
+        fullname: typeof r.fullname === 'string' ? r.fullname : '',
+        email: typeof r.email === 'string' ? r.email : '',
+        token: r.token,
+      };
+    }
+    // sesi format lama (nama/kelas) → hanguskan, user login ulang sekali saja
+    if (r !== null) {
+      try { localStorage.removeItem(AUTH_KEY); } catch { /* abaikan */ }
+    }
     return null;
   } catch {
     return null;
@@ -257,16 +269,16 @@ export interface AuthResult {
   err: string;
 }
 
-export async function apiDaftar(name: string, kelas: string, pass: string): Promise<AuthResult> {
+export async function apiDaftar(username: string, fullname: string, email: string, pass: string): Promise<AuthResult> {
   try {
     const r = await fetch('api/daftar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, kelas, pass }),
+      body: JSON.stringify({ username, fullname, email, pass }),
     });
-    const j = (await r.json()) as { ok: boolean; token?: string; name?: string; kelas?: string; err?: string };
+    const j = (await r.json()) as { ok: boolean; token?: string; username?: string; fullname?: string; email?: string; err?: string };
     if (r.ok && j.ok && typeof j.token === 'string') {
-      saveSession({ name: j.name ?? name, kelas: j.kelas ?? kelas, token: j.token });
+      saveSession({ username: j.username ?? username, fullname: j.fullname ?? fullname, email: j.email ?? email, token: j.token });
       return { ok: true, err: '' };
     }
     return { ok: false, err: typeof j.err === 'string' && j.err !== '' ? j.err : 'Gagal daftar.' };
@@ -275,16 +287,16 @@ export async function apiDaftar(name: string, kelas: string, pass: string): Prom
   }
 }
 
-export async function apiMasuk(name: string, pass: string): Promise<AuthResult> {
+export async function apiMasuk(username: string, pass: string): Promise<AuthResult> {
   try {
     const r = await fetch('api/masuk', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, pass }),
+      body: JSON.stringify({ username, pass }),
     });
-    const j = (await r.json()) as { ok: boolean; token?: string; name?: string; kelas?: string; err?: string };
+    const j = (await r.json()) as { ok: boolean; token?: string; username?: string; fullname?: string; email?: string; err?: string };
     if (r.ok && j.ok && typeof j.token === 'string') {
-      saveSession({ name: j.name ?? name, kelas: j.kelas ?? '', token: j.token });
+      saveSession({ username: j.username ?? username, fullname: j.fullname ?? '', email: j.email ?? '', token: j.token });
       return { ok: true, err: '' };
     }
     return { ok: false, err: typeof j.err === 'string' && j.err !== '' ? j.err : 'Gagal masuk.' };
