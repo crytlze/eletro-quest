@@ -13,6 +13,7 @@
     "kelas": "node scripts/serve-lan.mjs"
   },
   "dependencies": {
+    "@vercel/blob": "^2.8.0",
     "phaser": "3.90.0"
   },
   "devDependencies": {

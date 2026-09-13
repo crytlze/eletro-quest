@@ -1,8 +1,12 @@
-import { board, cors, json } from './_store.js';
+import { readBoard, cors, json } from './_store.js';
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') return res.end('');
   if (req.method !== 'GET') return json(res, 405, { ok: false });
-  return json(res, 200, { board: board(), at: Date.now() });
+  try {
+    return json(res, 200, { board: await readBoard(), at: Date.now() });
+  } catch {
+    return json(res, 500, { ok: false });
+  }
 }
